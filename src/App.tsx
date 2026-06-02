@@ -19,15 +19,6 @@ export function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const configured = !!(
-      import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
-    )
-
-    if (!configured) {
-      setLoading(false)
-      return
-    }
-
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         setSession(session)

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Menu, X, Compass, LogOut, User, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { supabase } from '@/lib/supabase'
+import { supabase, isDemoMode } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
 interface HeaderProps {
@@ -39,6 +39,11 @@ export function Header({ username }: HeaderProps) {
             <Compass className="h-5 w-5" />
           </span>
           <span className="font-display text-xl font-semibold tracking-tight">TripForge</span>
+          {isDemoMode && (
+            <span className="ml-1 rounded-full border border-honey/50 bg-honey/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-honey">
+              Demo
+            </span>
+          )}
         </Link>
 
         {/* Desktop nav */}

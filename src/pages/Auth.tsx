@@ -11,12 +11,8 @@ export function Auth() {
   const navigate = useNavigate()
   const [checking, setChecking] = useState(true)
 
-  // Redirect if already logged in
+  // Redirect if already logged in (the demo backend always returns a session)
   useEffect(() => {
-    if (!import.meta.env.VITE_SUPABASE_URL) {
-      setChecking(false)
-      return
-    }
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) navigate('/', { replace: true })
       else setChecking(false)
