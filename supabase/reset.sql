@@ -1,16 +1,47 @@
 -- ============================================================
--- TripForge Schema
+-- TripForge — FULL DATABASE RESET  (DESTRUCTIVE)
 -- Run this in the Supabase SQL editor: Dashboard > SQL Editor
+--
+-- ⚠️  THIS DELETES ALL APP DATA in the public schema (trips,
+--     members, items, suggestions, itinerary, profiles) and
+--     rebuilds everything cleanly from scratch.
+--
+--     It does NOT delete your auth users (logins are preserved),
+--     and it backfills a profile row for every existing user at
+--     the end, so you can keep using the same account.
+--
+-- This script mirrors schema.sql but is safely re-runnable: it
+-- drops first, so it never collides with existing objects or
+-- leaves behind the duplicate / recursive policies that caused
+-- the "infinite recursion in policy" errors.
 -- ============================================================
 
--- Enable UUID generation
+begin;
+
+-- ------------------------------------------------------------
+-- TEARDOWN — remove everything this app owns, including every
+-- policy attached to these tables (dropping a table drops its
+-- policies). cascade clears FK dependencies between them.
+-- ------------------------------------------------------------
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_user() cascade;
+drop function if exists public.is_trip_member(uuid) cascade;
+
+drop table if exists public.suggestions     cascade;
+drop table if exists public.itinerary_days  cascade;
+drop table if exists public.trip_items      cascade;
+drop table if exists public.trip_members    cascade;
+drop table if exists public.trips           cascade;
+drop table if exists public.profiles        cascade;
+
+
+-- ============================================================
+-- REBUILD
+-- ============================================================
 create extension if not exists "pgcrypto";
 
 
--- ============================================================
--- PROFILES
--- Extends auth.users with username, phone, avatar
--- ============================================================
+-- ---------- PROFILES ----------
 create table public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   username    text unique not null,
@@ -19,8 +50,6 @@ create table public.profiles (
   created_at  timestamptz default now() not null
 );
 
--- Auto-create a profile row when a new auth user signs up.
--- The app upserts username + phone immediately after sign-up.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -37,7 +66,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- RLS
 alter table public.profiles enable row level security;
 
 create policy "Profiles are viewable by all authenticated users"
@@ -49,11 +77,7 @@ create policy "Users can update their own profile"
   using (auth.uid() = id);
 
 
--- ============================================================
--- TRIPS
--- destinations is jsonb to support multi-stage itineraries:
--- [{ "city": "Paris", "country": "FR", "from": "2026-09-01", "to": "2026-09-05" }]
--- ============================================================
+-- ---------- TRIPS ----------
 create table public.trips (
   id           uuid primary key default gen_random_uuid(),
   title        text not null,
@@ -63,9 +87,6 @@ create table public.trips (
   budget       numeric(10, 2),
   currency     text default 'USD',
   owner_id     uuid not null references auth.users (id) on delete cascade,
-  -- Flexible store for richer planning data: per-traveller budgets, an
-  -- optional category budget breakdown, preferred airlines, and saved
-  -- flights/hotels. Keeps the schema additive as features grow.
   metadata     jsonb default '{}',
   created_at   timestamptz default now() not null
 );
@@ -75,17 +96,10 @@ alter table public.trips enable row level security;
 create policy "Trip owners can do anything"
   on public.trips for all
   using (auth.uid() = owner_id);
-
--- NOTE: the collaborator "can view trips" policy lives below, after
--- trip_members and a SECURITY DEFINER helper are defined. Checking
--- membership through that helper (rather than a direct subquery on
--- trip_members) avoids a mutual-recursion cycle between the trips and
--- trip_members RLS policies.
+-- collaborator read policy added after trip_members + helper exist
 
 
--- ============================================================
--- TRIP MEMBERS
--- ============================================================
+-- ---------- TRIP MEMBERS ----------
 create table public.trip_members (
   trip_id    uuid not null references public.trips (id) on delete cascade,
   user_id    uuid not null references auth.users (id) on delete cascade,
@@ -110,10 +124,9 @@ create policy "Trip owners can view and manage members"
     )
   );
 
--- SECURITY DEFINER membership check. Because it runs as the function
--- owner it bypasses RLS on trip_members, so calling it from the trips
--- policy below does not re-trigger trip_members' policies (which would
--- otherwise recurse back into trips).
+-- SECURITY DEFINER membership check — bypasses RLS on trip_members so
+-- the trips policy below can call it without re-triggering trip_members'
+-- policies (which would otherwise recurse back into trips).
 create or replace function public.is_trip_member(_trip_id uuid)
 returns boolean
 language sql
@@ -128,16 +141,12 @@ as $$
   );
 $$;
 
--- Collaborators (non-owners) can read trips they are a member of.
 create policy "Trip members can view trips"
   on public.trips for select
   using (public.is_trip_member(id));
 
 
--- ============================================================
--- TRIP ITEMS
--- Flights, hotels, Airbnbs, trains, activities saved to a trip
--- ============================================================
+-- ---------- TRIP ITEMS ----------
 create table public.trip_items (
   id         uuid primary key default gen_random_uuid(),
   trip_id    uuid not null references public.trips (id) on delete cascade,
@@ -148,7 +157,7 @@ create table public.trip_items (
   url        text,
   status     text not null default 'suggested' check (status in ('saved', 'suggested', 'confirmed')),
   added_by   uuid not null references auth.users (id),
-  metadata   jsonb default '{}',  -- flexible store for API-specific fields
+  metadata   jsonb default '{}',
   created_at timestamptz default now() not null
 );
 
@@ -184,10 +193,7 @@ create policy "Item owner can update or delete"
   using (auth.uid() = added_by);
 
 
--- ============================================================
--- SUGGESTIONS
--- Comments / upvotes on trip items
--- ============================================================
+-- ---------- SUGGESTIONS ----------
 create table public.suggestions (
   id           uuid primary key default gen_random_uuid(),
   trip_item_id uuid not null references public.trip_items (id) on delete cascade,
@@ -224,10 +230,7 @@ create policy "Users can update their own suggestions"
   using (auth.uid() = user_id);
 
 
--- ============================================================
--- ITINERARY DAYS
--- Day-by-day notes for a trip
--- ============================================================
+-- ---------- ITINERARY DAYS ----------
 create table public.itinerary_days (
   id       uuid primary key default gen_random_uuid(),
   trip_id  uuid not null references public.trips (id) on delete cascade,
@@ -260,10 +263,23 @@ create policy "Trip members can manage itinerary days"
   );
 
 
--- ============================================================
--- REAL-TIME
--- Enable Supabase real-time for collaborative features
--- ============================================================
+-- ---------- BACKFILL PROFILES ----------
+-- The on_auth_user_created trigger only fires for NEW signups, so create
+-- a profile for every user that already exists (e.g. your account).
+insert into public.profiles (id, username)
+select u.id,
+       coalesce(u.raw_user_meta_data->>'username', 'user_' || substr(u.id::text, 1, 8))
+from auth.users u
+on conflict (id) do nothing;
+
+commit;
+
+
+-- ------------------------------------------------------------
+-- REAL-TIME (run separately, AFTER the transaction above commits;
+-- publication changes are best kept out of the main transaction).
+-- Safe to re-run: a table is silently re-added if already present.
+-- ------------------------------------------------------------
 alter publication supabase_realtime add table public.trip_items;
 alter publication supabase_realtime add table public.suggestions;
 alter publication supabase_realtime add table public.itinerary_days;
