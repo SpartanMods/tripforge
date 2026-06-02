@@ -151,11 +151,7 @@ ANTHROPIC_API_KEY=
 
 In your Supabase dashboard, go to **SQL Editor** and run the contents of `supabase/schema.sql`. This creates all tables, RLS policies, triggers, and enables real-time on the relevant tables.
 
-### 4. Configure Google OAuth (optional)
-
-In your Supabase dashboard go to **Authentication → Providers → Google** and add your Google OAuth client ID and secret. Add `http://localhost:5173` as an authorised redirect URL in the Google Cloud Console.
-
-### 5. Run the dev server
+### 4. Run the dev server
 
 ```bash
 npm run dev
@@ -174,7 +170,6 @@ TripForge supports three sign-in methods:
 | **Email + password** | Works out of the box once Supabase is configured |
 | **Username + password** | Requires a Supabase Edge Function (`username-signin`) to look up the user's email — not yet deployed |
 | **Phone OTP** | Requires Twilio configured in Supabase Authentication settings |
-| **Google OAuth** | Requires Google OAuth app configured in Supabase |
 
 All accounts have a `username` field (set at sign-up) that appears in the app greeting and is used for `@mentions` in comments.
 

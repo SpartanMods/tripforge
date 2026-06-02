@@ -13,6 +13,10 @@ export function Auth() {
 
   // Redirect if already logged in
   useEffect(() => {
+    if (!import.meta.env.VITE_SUPABASE_URL) {
+      setChecking(false)
+      return
+    }
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) navigate('/', { replace: true })
       else setChecking(false)
