@@ -76,15 +76,11 @@ create policy "Trip owners can do anything"
   on public.trips for all
   using (auth.uid() = owner_id);
 
-create policy "Trip members can view trips"
-  on public.trips for select
-  using (
-    exists (
-      select 1 from public.trip_members
-      where trip_members.trip_id = trips.id
-        and trip_members.user_id = auth.uid()
-    )
-  );
+-- NOTE: the collaborator "can view trips" policy lives below, after
+-- trip_members and a SECURITY DEFINER helper are defined. Checking
+-- membership through that helper (rather than a direct subquery on
+-- trip_members) avoids a mutual-recursion cycle between the trips and
+-- trip_members RLS policies.
 
 
 -- ============================================================
@@ -113,6 +109,29 @@ create policy "Trip owners can view and manage members"
         and trips.owner_id = auth.uid()
     )
   );
+
+-- SECURITY DEFINER membership check. Because it runs as the function
+-- owner it bypasses RLS on trip_members, so calling it from the trips
+-- policy below does not re-trigger trip_members' policies (which would
+-- otherwise recurse back into trips).
+create or replace function public.is_trip_member(_trip_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.trip_members
+    where trip_id = _trip_id
+      and user_id = auth.uid()
+  );
+$$;
+
+-- Collaborators (non-owners) can read trips they are a member of.
+create policy "Trip members can view trips"
+  on public.trips for select
+  using (public.is_trip_member(id));
 
 
 -- ============================================================
