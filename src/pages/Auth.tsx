@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin } from 'lucide-react'
+import { Compass } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LoginForm } from '@/components/auth/LoginForm'
@@ -26,17 +26,17 @@ export function Auth() {
   if (checking) return null
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="grain relative min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-ocean/15 via-background to-primary/15">
+      <div className="relative w-full max-w-md space-y-6 animate-rise">
         {/* Brand header */}
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-2">
           <div className="flex justify-center">
-            <div className="rounded-full bg-primary p-3">
-              <MapPin className="h-6 w-6 text-primary-foreground" />
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lift">
+              <Compass className="h-7 w-7" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">TripForge</h1>
-          <p className="text-sm text-muted-foreground">Plan your next adventure, together.</p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">TripForge</h1>
+          <p className="text-sm text-muted-foreground">Forge your next journey — together.</p>
         </div>
 
         {/* Auth card */}

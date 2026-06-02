@@ -112,16 +112,18 @@ itinerary_days
 ---
 
 ## Current status
-[ ] Project scaffolded
+[x] Project scaffolded
 [ ] Supabase project created + schema applied
-[ ] Auth (sign up / login) working
-[ ] Destination discovery UI
-[ ] Flight search integrated
-[ ] Accommodation search integrated
+[x] Auth (sign up / login) working
+[x] Destination discovery UI — "Pick a city" (country + 3 interests → best-fit city)
+[x] Flight search UX (mock-backed; preferred-airline selection; live API pending key)
+[x] Accommodation search UX (mock-backed; live API pending key)
 [ ] Train search integrated
 [ ] Things to do integrated
 [ ] Collaborative planning (invites, suggestions, real-time)
-[ ] Budget tracker
+[x] Budget tracker — per-traveller budgets + optional advanced category breakdown
+[x] My Trips — save / list / open / delete trips
+[x] Profile — update details + reset password while logged in
 [ ] Deployed to Vercel
 
 ---

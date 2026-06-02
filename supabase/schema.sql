@@ -63,6 +63,10 @@ create table public.trips (
   budget       numeric(10, 2),
   currency     text default 'USD',
   owner_id     uuid not null references auth.users (id) on delete cascade,
+  -- Flexible store for richer planning data: per-traveller budgets, an
+  -- optional category budget breakdown, preferred airlines, and saved
+  -- flights/hotels. Keeps the schema additive as features grow.
+  metadata     jsonb default '{}',
   created_at   timestamptz default now() not null
 );
 

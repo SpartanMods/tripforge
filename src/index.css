@@ -2,50 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   TripForge — "Wanderlust Editorial" theme
+   Warm paper, terracotta clay, deep ocean teal, ink-brown text.
+   Distinctive type: Fraunces (display) + Hanken Grotesk (body).
+   ============================================================ */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
+    /* Warm paper canvas */
+    --background: 40 52% 96%;
+    --foreground: 28 25% 13%;
+
+    --card: 42 64% 99%;
+    --card-foreground: 28 25% 13%;
+
+    --popover: 42 64% 99%;
+    --popover-foreground: 28 25% 13%;
+
+    /* Terracotta / clay — the brand signature */
+    --primary: 14 64% 48%;
+    --primary-foreground: 40 60% 97%;
+
+    /* Warm sand */
+    --secondary: 38 38% 90%;
+    --secondary-foreground: 24 30% 22%;
+
+    --muted: 38 34% 91%;
+    --muted-foreground: 30 13% 42%;
+
+    /* Deep ocean teal — the secondary accent */
+    --accent: 184 44% 90%;
+    --accent-foreground: 186 56% 20%;
+
+    --ocean: 186 54% 27%;
+    --ocean-foreground: 40 60% 97%;
+
+    /* Honey / amber highlight for ratings + budget meters */
+    --honey: 36 84% 52%;
+
+    --destructive: 4 66% 48%;
+    --destructive-foreground: 40 60% 97%;
+
+    --success: 152 46% 36%;
+
+    --border: 36 30% 84%;
+    --input: 36 30% 84%;
+    --ring: 14 64% 48%;
+
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    /* Warm night — lantern-lit travel journal */
+    --background: 28 18% 9%;
+    --foreground: 40 38% 92%;
+
+    --card: 26 16% 12%;
+    --card-foreground: 40 38% 92%;
+
+    --popover: 26 16% 12%;
+    --popover-foreground: 40 38% 92%;
+
+    --primary: 14 72% 56%;
+    --primary-foreground: 28 25% 10%;
+
+    --secondary: 26 12% 18%;
+    --secondary-foreground: 40 30% 88%;
+
+    --muted: 26 12% 18%;
+    --muted-foreground: 36 14% 62%;
+
+    --accent: 186 30% 20%;
+    --accent-foreground: 184 50% 82%;
+
+    --ocean: 184 48% 60%;
+    --ocean-foreground: 28 25% 10%;
+
+    --honey: 36 84% 58%;
+
+    --destructive: 4 64% 52%;
+    --destructive-foreground: 40 60% 97%;
+
+    --success: 152 44% 50%;
+
+    --border: 28 12% 22%;
+    --input: 28 12% 22%;
+    --ring: 14 72% 56%;
   }
 }
 
@@ -53,8 +96,99 @@
   * {
     @apply border-border;
   }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "ss01" 1, "cv01" 1;
+    /* Subtle paper grain layered over the warm canvas */
+    background-image:
+      radial-gradient(at 18% -10%, hsl(14 64% 48% / 0.06) 0px, transparent 45%),
+      radial-gradient(at 90% 0%, hsl(186 54% 27% / 0.05) 0px, transparent 40%);
+    background-attachment: fixed;
+  }
+
+  /* Headings lean on the editorial serif by default */
+  h1, h2, h3 {
+    @apply font-display;
+  }
+
+  /* Tame the autofill blue tint on the warm theme */
+  input:-webkit-autofill {
+    -webkit-text-fill-color: hsl(var(--foreground));
+    transition: background-color 9999s ease-in-out 0s;
+  }
+}
+
+@layer components {
+  /* Decorative eyebrow label — small caps, letter-spaced */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  /* Fine-grain noise overlay for hero surfaces */
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer utilities {
+  /* Staggered page-load reveal */
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-rise {
+    animation: rise-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Custom range slider track + thumb (used by the budget allocator) */
+  .range-clay {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: hsl(var(--secondary));
+    outline: none;
+  }
+  .range-clay::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 9999px;
+    background: hsl(var(--primary));
+    border: 3px solid hsl(var(--card));
+    box-shadow: 0 1px 6px hsl(14 64% 30% / 0.4);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+  }
+  .range-clay::-webkit-slider-thumb:hover {
+    transform: scale(1.12);
+  }
+  .range-clay::-moz-range-thumb {
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 9999px;
+    background: hsl(var(--primary));
+    border: 3px solid hsl(var(--card));
+    cursor: pointer;
   }
 }

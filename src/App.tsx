@@ -4,16 +4,10 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { Layout } from '@/components/layout/Layout'
 import { Auth } from '@/pages/Auth'
-import { Home } from '@/pages/Home'
-
-// Placeholder for the trip detail page — built in a future session
-function TripPage() {
-  return (
-    <div className="text-center py-20 text-muted-foreground">
-      Trip detail page — coming soon!
-    </div>
-  )
-}
+import { MyTrips } from '@/pages/MyTrips'
+import { PlanTrip } from '@/pages/PlanTrip'
+import { TripDetail } from '@/pages/TripDetail'
+import { Profile } from '@/pages/Profile'
 
 function AuthGuard({ session, children }: { session: Session | null; children: React.ReactNode }) {
   if (!session) return <Navigate to="/auth" replace />
@@ -66,8 +60,10 @@ export function App() {
             </AuthGuard>
           }
         >
-          <Route path="/" element={<Home />} />
-          <Route path="/trip/:id" element={<TripPage />} />
+          <Route path="/" element={<MyTrips />} />
+          <Route path="/plan" element={<PlanTrip />} />
+          <Route path="/trip/:id" element={<TripDetail />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
