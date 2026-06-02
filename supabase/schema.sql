@@ -100,18 +100,11 @@ create table public.trip_members (
 
 alter table public.trip_members enable row level security;
 
-create policy "Members of a trip can view trip members"
+create policy "Users can view their own membership"
   on public.trip_members for select
-  using (
-    auth.uid() = user_id
-    or exists (
-      select 1 from public.trip_members tm
-      where tm.trip_id = trip_members.trip_id
-        and tm.user_id = auth.uid()
-    )
-  );
+  using (auth.uid() = user_id);
 
-create policy "Trip owners can manage members"
+create policy "Trip owners can view and manage members"
   on public.trip_members for all
   using (
     exists (
