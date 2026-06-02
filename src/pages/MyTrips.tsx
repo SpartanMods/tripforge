@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, MapPin, CalendarDays, Wallet, Users, Compass, Loader2 } from 'lucide-react'
+import { Plus, MapPin, CalendarDays, Wallet, Users, Compass, Loader2, Share2, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
 import { formatMoney, formatDateRange } from '@/lib/format'
 import { countryFlag } from '@/lib/interests'
+import { canShareFiles } from '@/lib/share'
 import type { Trip } from '@/lib/types'
 
 export function MyTrips() {
@@ -14,6 +15,23 @@ export function MyTrips() {
   const [trips, setTrips] = useState<Trip[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [sharingId, setSharingId] = useState<string | null>(null)
+
+  // Export a trip without navigating into it (cards are links). jsPDF is
+  // imported on demand so it stays out of the initial bundle.
+  async function handleShare(e: React.MouseEvent, trip: Trip) {
+    e.preventDefault()
+    e.stopPropagation()
+    setSharingId(trip.id)
+    try {
+      const { shareTripPdf } = await import('@/lib/tripPdf')
+      await shareTripPdf(trip)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not export this trip.')
+    } finally {
+      setSharingId(null)
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -84,9 +102,23 @@ export function MyTrips() {
                 className="group block animate-rise"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
-                <Card className="h-full transition-all hover:-translate-y-0.5 hover:shadow-lift">
+                <Card className="relative h-full transition-all hover:-translate-y-0.5 hover:shadow-lift">
+                  <button
+                    type="button"
+                    onClick={(e) => handleShare(e, trip)}
+                    disabled={sharingId === trip.id}
+                    aria-label={`Share ${trip.title}`}
+                    title={canShareFiles() ? 'Share itinerary' : 'Download PDF'}
+                    className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full border bg-background/80 text-muted-foreground backdrop-blur transition-colors hover:text-primary hover:border-primary/40 disabled:opacity-60"
+                  >
+                    {sharingId === trip.id
+                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                      : canShareFiles()
+                        ? <Share2 className="h-4 w-4" />
+                        : <Download className="h-4 w-4" />}
+                  </button>
                   <CardContent className="p-5 space-y-3">
-                    <div className="flex items-center gap-1 text-2xl">
+                    <div className="flex items-center gap-1 text-2xl pr-10">
                       {dests.slice(0, 4).map((d, j) => (
                         <span key={j}>{countryFlag(d.countryCode || '')}</span>
                       ))}

@@ -15,17 +15,7 @@ import { supabase } from '@/lib/supabase'
 import { formatMoney, formatDateRange, nightsBetween } from '@/lib/format'
 import { countryFlag } from '@/lib/interests'
 import { BUDGET_CATEGORIES, type Trip, type SavedFlight, type SavedHotel, type TripMetadata } from '@/lib/types'
-
-// Lightweight check (no jsPDF import) for whether the browser can share files
-// via the native sheet. The heavy PDF module is loaded on demand below.
-function canShareFiles(): boolean {
-  try {
-    const probe = new File([new Blob()], 'probe.pdf', { type: 'application/pdf' })
-    return typeof navigator !== 'undefined' && !!navigator.canShare && navigator.canShare({ files: [probe] })
-  } catch {
-    return false
-  }
-}
+import { canShareFiles } from '@/lib/share'
 
 export function TripDetail() {
   const { id } = useParams()
