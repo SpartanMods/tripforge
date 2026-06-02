@@ -11,12 +11,22 @@ const config: Config = {
       screens: { '2xl': '1400px' },
     },
     extend: {
+      fontFamily: {
+        display: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+        sans: ['"Hanken Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        ocean: {
+          DEFAULT: 'hsl(var(--ocean))',
+          foreground: 'hsl(var(--ocean-foreground))',
+        },
+        honey: 'hsl(var(--honey))',
+        success: 'hsl(var(--success))',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -50,6 +60,10 @@ const config: Config = {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      boxShadow: {
+        soft: '0 2px 8px hsl(28 25% 13% / 0.05), 0 8px 24px hsl(28 25% 13% / 0.06)',
+        lift: '0 10px 30px hsl(28 25% 13% / 0.12)',
       },
       keyframes: {
         'accordion-down': {
