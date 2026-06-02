@@ -173,6 +173,7 @@ export function createDemoClient() {
       },
       async verifyOtp() { return { data: { session: DEMO_SESSION }, error: null } },
       async signUp() { return { data: { user: DEMO_USER, session: DEMO_SESSION }, error: null } },
+      async resetPasswordForEmail() { return { data: {}, error: null } },
       async updateUser() { return { data: { user: DEMO_USER }, error: null } },
       async signOut() { return { error: null } },
     },

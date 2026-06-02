@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   MapPin, CalendarDays, Wallet, Users, Plane, BedDouble, Compass,
-  Loader2, Trash2, ArrowLeft, X,
+  Loader2, Trash2, ArrowLeft, X, Share2, Download, Check,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -16,6 +16,17 @@ import { formatMoney, formatDateRange, nightsBetween } from '@/lib/format'
 import { countryFlag } from '@/lib/interests'
 import { BUDGET_CATEGORIES, type Trip, type SavedFlight, type SavedHotel, type TripMetadata } from '@/lib/types'
 
+// Lightweight check (no jsPDF import) for whether the browser can share files
+// via the native sheet. The heavy PDF module is loaded on demand below.
+function canShareFiles(): boolean {
+  try {
+    const probe = new File([new Blob()], 'probe.pdf', { type: 'application/pdf' })
+    return typeof navigator !== 'undefined' && !!navigator.canShare && navigator.canShare({ files: [probe] })
+  } catch {
+    return false
+  }
+}
+
 export function TripDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -23,6 +34,8 @@ export function TripDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const [shareDone, setShareDone] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -56,6 +69,29 @@ export function TripDetail() {
   }
   function removeHotel(idToRemove: string) {
     patchMeta({ ...meta, savedHotels: (meta.savedHotels ?? []).filter((h) => h.id !== idToRemove) })
+  }
+
+  async function handleShare() {
+    if (!trip) return
+    setSharing(true)
+    try {
+      const { shareTripPdf } = await import('@/lib/tripPdf')
+      const result = await shareTripPdf(trip)
+      if (result !== 'cancelled') {
+        setShareDone(true)
+        setTimeout(() => setShareDone(false), 2500)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not export this trip.')
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  async function handleDownload() {
+    if (!trip) return
+    const { downloadTripPdf } = await import('@/lib/tripPdf')
+    downloadTripPdf(trip)
   }
 
   async function deleteTrip() {
@@ -106,6 +142,22 @@ export function TripDetail() {
             {meta.travellers?.length ? (
               <Badge variant="secondary" className="gap-1"><Users className="h-3 w-3" /> {meta.travellers.length} travellers</Badge>
             ) : null}
+          </div>
+
+          {/* Share / export */}
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <Button size="sm" onClick={handleShare} disabled={sharing} className="gap-1.5">
+              {sharing ? <Loader2 className="h-4 w-4 animate-spin" />
+                : shareDone ? <Check className="h-4 w-4" />
+                : canShareFiles() ? <Share2 className="h-4 w-4" />
+                : <Download className="h-4 w-4" />}
+              {shareDone ? 'Done' : canShareFiles() ? 'Share itinerary' : 'Download PDF'}
+            </Button>
+            {canShareFiles() && (
+              <Button size="sm" variant="outline" onClick={handleDownload} className="gap-1.5">
+                <Download className="h-4 w-4" /> Save PDF
+              </Button>
+            )}
           </div>
         </div>
       </div>
