@@ -22,10 +22,31 @@ export function LoginForm() {
   const [otpCode, setOtpCode] = useState('')
   const [otpSent, setOtpSent] = useState(false)
 
+  // Forgot-password (reset request) flow
+  const [forgot, setForgot] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   function clearError() { setError(null) }
+
+  async function handleSendReset(e: React.FormEvent) {
+    e.preventDefault()
+    clearError()
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      if (error) throw error
+      setResetSent(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send reset email.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleEmailSignIn(e: React.FormEvent) {
     e.preventDefault()
@@ -115,36 +136,94 @@ export function LoginForm() {
 
       {/* Email tab */}
       <TabsContent value="email">
-        <form onSubmit={handleEmailSignIn} className="space-y-3 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="login-email">Email</Label>
-            <Input
-              id="login-email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="login-password">Password</Label>
-            <Input
-              id="login-password"
-              type="password"
-              placeholder="Your password"
-              value={emailPassword}
-              onChange={(e) => setEmailPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </form>
+        {forgot ? (
+          resetSent ? (
+            <div className="space-y-4 pt-2">
+              <div className="rounded-lg border border-success/40 bg-success/10 p-4 text-sm">
+                <p className="font-medium">Check your inbox</p>
+                <p className="text-muted-foreground mt-1">
+                  If an account exists for <strong>{email}</strong>, we've sent a link to reset your password.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="text-sm text-muted-foreground underline"
+                onClick={() => { setForgot(false); setResetSent(false); clearError() }}
+              >
+                Back to sign in
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSendReset} className="space-y-3 pt-2">
+              <p className="text-sm text-muted-foreground">
+                Enter your email and we'll send you a link to reset your password.
+              </p>
+              <div className="space-y-1.5">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Sending…' : 'Send reset link'}
+              </Button>
+              <button
+                type="button"
+                className="text-sm text-muted-foreground underline"
+                onClick={() => { setForgot(false); clearError() }}
+              >
+                Back to sign in
+              </button>
+            </form>
+          )
+        ) : (
+          <form onSubmit={handleEmailSignIn} className="space-y-3 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="login-email">Email</Label>
+              <Input
+                id="login-email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="login-password">Password</Label>
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-foreground underline"
+                  onClick={() => { setForgot(true); clearError() }}
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <Input
+                id="login-password"
+                type="password"
+                placeholder="Your password"
+                value={emailPassword}
+                onChange={(e) => setEmailPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </form>
+        )}
       </TabsContent>
 
       {/* Username tab */}

@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { Layout } from '@/components/layout/Layout'
 import { Auth } from '@/pages/Auth'
+import { ResetPassword } from '@/pages/ResetPassword'
 import { MyTrips } from '@/pages/MyTrips'
 import { PlanTrip } from '@/pages/PlanTrip'
 import { TripDetail } from '@/pages/TripDetail'
@@ -19,15 +20,6 @@ export function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const configured = !!(
-      import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
-    )
-
-    if (!configured) {
-      setLoading(false)
-      return
-    }
-
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         setSession(session)
@@ -53,6 +45,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           element={
             <AuthGuard session={session}>

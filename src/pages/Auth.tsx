@@ -11,12 +11,8 @@ export function Auth() {
   const navigate = useNavigate()
   const [checking, setChecking] = useState(true)
 
-  // Redirect if already logged in
+  // Redirect if already logged in (the demo backend always returns a session)
   useEffect(() => {
-    if (!import.meta.env.VITE_SUPABASE_URL) {
-      setChecking(false)
-      return
-    }
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) navigate('/', { replace: true })
       else setChecking(false)
@@ -35,8 +31,8 @@ export function Auth() {
               <Compass className="h-7 w-7" />
             </div>
           </div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">TripForge</h1>
-          <p className="text-sm text-muted-foreground">Forge your next journey — together.</p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">Voya</h1>
+          <p className="text-sm text-muted-foreground">Your next voyage, planned together.</p>
         </div>
 
         {/* Auth card */}
@@ -52,14 +48,14 @@ export function Auth() {
             <CardContent className="pt-6">
               <TabsContent value="signin" className="mt-0">
                 <CardTitle className="text-base mb-1">Welcome back</CardTitle>
-                <CardDescription className="mb-4">Sign in to your TripForge account.</CardDescription>
+                <CardDescription className="mb-4">Sign in to your Voya account.</CardDescription>
                 <LoginForm />
               </TabsContent>
 
               <TabsContent value="signup" className="mt-0">
                 <CardTitle className="text-base mb-1">Create your account</CardTitle>
                 <CardDescription className="mb-4">
-                  Join TripForge and start planning trips with friends.
+                  Join Voya and start planning trips with friends.
                 </CardDescription>
                 <SignupForm />
               </TabsContent>
