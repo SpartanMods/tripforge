@@ -77,21 +77,30 @@ function seed() {
 // Chainable, awaitable query builder mirroring the bits of the
 // supabase-js PostgREST builder the app relies on.
 class Query implements PromiseLike<{ data: any; error: any }> {
-  private filters: [string, any][] = []
+  private preds: ((r: Row) => boolean)[] = []
   private op: 'select' | 'insert' | 'update' | 'upsert' | 'delete' = 'select'
   private payload: any = null
   private wantSingle = false
   private wantMaybe = false
   private orderBy: { col: string; asc: boolean } | null = null
+  private limitN: number | null = null
 
   constructor(private table: string) {}
 
   select() { return this }
-  eq(col: string, val: any) { this.filters.push([col, val]); return this }
+  eq(col: string, val: any) { this.preds.push((r) => r[col] === val); return this }
+  neq(col: string, val: any) { this.preds.push((r) => r[col] !== val); return this }
+  in(col: string, vals: any[]) { this.preds.push((r) => vals.includes(r[col])); return this }
+  ilike(col: string, pattern: string) {
+    const needle = String(pattern).replace(/%/g, '').toLowerCase()
+    this.preds.push((r) => String(r[col] ?? '').toLowerCase().includes(needle))
+    return this
+  }
   order(col: string, opts?: { ascending?: boolean }) {
     this.orderBy = { col, asc: opts?.ascending ?? true }
     return this
   }
+  limit(n: number) { this.limitN = n; return this }
   single() { this.wantSingle = true; return this }
   maybeSingle() { this.wantMaybe = true; return this }
   insert(payload: any) { this.op = 'insert'; this.payload = payload; return this }
@@ -106,17 +115,18 @@ class Query implements PromiseLike<{ data: any; error: any }> {
     return Promise.resolve(this.exec()).then(resolve, reject)
   }
 
-  private match(rows: Row[]): Row[] {
-    return rows.filter((r) => this.filters.every(([c, v]) => r[c] === v))
+  private matches(r: Row): boolean {
+    return this.preds.every((p) => p(r))
   }
 
   private exec(): { data: any; error: any } {
     const rows = read(this.table)
 
     if (this.op === 'insert') {
-      const created = { id: crypto.randomUUID(), created_at: new Date().toISOString(), ...this.payload }
-      write(this.table, [created, ...rows])
-      return { data: this.wantSingle ? created : [created], error: null }
+      const list = Array.isArray(this.payload) ? this.payload : [this.payload]
+      const created = list.map((p) => ({ id: crypto.randomUUID(), created_at: new Date().toISOString(), ...p }))
+      write(this.table, [...created, ...rows])
+      return { data: this.wantSingle ? created[0] : created, error: null }
     }
 
     if (this.op === 'upsert') {
@@ -128,20 +138,18 @@ class Query implements PromiseLike<{ data: any; error: any }> {
     }
 
     if (this.op === 'update') {
-      const next = rows.map((r) =>
-        this.filters.every(([c, v]) => r[c] === v) ? { ...r, ...this.payload } : r,
-      )
+      const next = rows.map((r) => (this.matches(r) ? { ...r, ...this.payload } : r))
       write(this.table, next)
       return { data: null, error: null }
     }
 
     if (this.op === 'delete') {
-      write(this.table, rows.filter((r) => !this.filters.every(([c, v]) => r[c] === v)))
+      write(this.table, rows.filter((r) => !this.matches(r)))
       return { data: null, error: null }
     }
 
     // select
-    let result = this.match(rows)
+    let result = rows.filter((r) => this.matches(r))
     if (this.orderBy) {
       const { col, asc } = this.orderBy
       result = [...result].sort((a, b) =>
@@ -154,6 +162,7 @@ class Query implements PromiseLike<{ data: any; error: any }> {
         : { data: null, error: { message: 'No rows found' } }
     }
     if (this.wantMaybe) return { data: result[0] ?? null, error: null }
+    if (this.limitN != null) result = result.slice(0, this.limitN)
     return { data: result, error: null }
   }
 }

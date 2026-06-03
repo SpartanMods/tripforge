@@ -16,6 +16,7 @@ import { formatMoney, formatDateRange, nightsBetween } from '@/lib/format'
 import { countryFlag } from '@/lib/interests'
 import { BUDGET_CATEGORIES, type Trip, type SavedFlight, type SavedHotel, type TripMetadata } from '@/lib/types'
 import { canShareFiles } from '@/lib/share'
+import { TripMembers } from '@/components/trip/TripMembers'
 
 export function TripDetail() {
   const { id } = useParams()
@@ -26,12 +27,17 @@ export function TripDetail() {
   const [deleting, setDeleting] = useState(false)
   const [sharing, setSharing] = useState(false)
   const [shareDone, setShareDone] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState('')
 
   useEffect(() => {
     async function load() {
-      const { data, error } = await supabase.from('trips').select('*').eq('id', id).single()
-      if (error) setError(error.message)
-      else setTrip(data as Trip)
+      const [{ data: { user } }, tripRes] = await Promise.all([
+        supabase.auth.getUser(),
+        supabase.from('trips').select('*').eq('id', id).single(),
+      ])
+      setCurrentUserId(user?.id ?? '')
+      if (tripRes.error) setError(tripRes.error.message)
+      else setTrip(tripRes.data as Trip)
       setLoading(false)
     }
     load()
@@ -107,6 +113,7 @@ export function TripDetail() {
   const firstStop = dests.find((d) => d.city)
   const savedFlights = meta.savedFlights ?? []
   const savedHotels = meta.savedHotels ?? []
+  const isOwner = trip.owner_id === currentUserId
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -216,6 +223,16 @@ export function TripDetail() {
         </Card>
       )}
 
+      {/* Travel party */}
+      {currentUserId && (
+        <TripMembers
+          tripId={trip.id}
+          ownerId={trip.owner_id}
+          currentUserId={currentUserId}
+          onLeft={() => navigate('/')}
+        />
+      )}
+
       {/* Saved flights & hotels */}
       <Card>
         <CardHeader>
@@ -268,9 +285,11 @@ export function TripDetail() {
 
       <div className="flex justify-between pt-2">
         <Button variant="outline" asChild><Link to="/plan">Plan another trip</Link></Button>
-        <Button variant="ghost" onClick={deleteTrip} disabled={deleting} className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5">
-          <Trash2 className="h-4 w-4" /> {deleting ? 'Deleting…' : 'Delete trip'}
-        </Button>
+        {isOwner && (
+          <Button variant="ghost" onClick={deleteTrip} disabled={deleting} className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5">
+            <Trash2 className="h-4 w-4" /> {deleting ? 'Deleting…' : 'Delete trip'}
+          </Button>
+        )}
       </div>
     </div>
   )

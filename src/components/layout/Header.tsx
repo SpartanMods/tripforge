@@ -12,6 +12,7 @@ interface HeaderProps {
 const navItems = [
   { to: '/', label: 'My Trips', end: true },
   { to: '/plan', label: 'Plan a trip', end: false },
+  { to: '/friends', label: 'Friends', end: false },
   { to: '/profile', label: 'Profile', end: false },
 ]
 
