@@ -38,7 +38,7 @@ export function Header({ username }: HeaderProps) {
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Compass className="h-5 w-5" />
           </span>
-          <span className="font-display text-xl font-semibold tracking-tight">TripForge</span>
+          <span className="font-display text-xl font-semibold tracking-tight">Voya</span>
           {isDemoMode && (
             <span className="ml-1 rounded-full border border-honey/50 bg-honey/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-honey">
               Demo

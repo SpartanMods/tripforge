@@ -61,7 +61,7 @@ export function ResetPassword() {
               <Compass className="h-7 w-7" />
             </div>
           </div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">TripForge</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">Voya</h1>
           <p className="text-sm text-muted-foreground">Set a new password.</p>
         </div>
 
@@ -84,7 +84,7 @@ export function ResetPassword() {
                     <p className="text-sm text-muted-foreground">You're all set. Sign in with your new password.</p>
                   </div>
                 </div>
-                <Button className="w-full" onClick={() => navigate('/', { replace: true })}>Continue to TripForge</Button>
+                <Button className="w-full" onClick={() => navigate('/', { replace: true })}>Continue to Voya</Button>
               </div>
             ) : !ready ? (
               <div className="space-y-4">

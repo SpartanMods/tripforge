@@ -30,7 +30,7 @@ function slugify(s: string): string {
 }
 
 export function tripPdfFilename(trip: Trip): string {
-  return `${slugify(trip.title)}-tripforge.pdf`
+  return `${slugify(trip.title)}-voya.pdf`
 }
 
 export function buildTripPdf(trip: Trip): jsPDF {
@@ -82,7 +82,7 @@ export function buildTripPdf(trip: Trip): jsPDF {
   doc.rect(0, 0, PAGE_W, 6, 'F')
 
   setFont('bold', 9, TERRACOTTA)
-  doc.text('TRIPFORGE', MARGIN, 40, { charSpace: 2 })
+  doc.text('VOYA', MARGIN, 40, { charSpace: 2 })
 
   setFont('italic', 28, INK)
   const titleLines = doc.splitTextToSize(trip.title, CONTENT_W)
@@ -165,7 +165,7 @@ export function buildTripPdf(trip: Trip): jsPDF {
   for (let p = 1; p <= pages; p++) {
     doc.setPage(p)
     setFont('normal', 8, MUTED)
-    doc.text('Forged with TripForge · forge your next journey', MARGIN, PAGE_H - 24)
+    doc.text('Made with Voya · your next voyage', MARGIN, PAGE_H - 24)
     doc.text(`${p} / ${pages}`, PAGE_W - MARGIN, PAGE_H - 24, { align: 'right' })
   }
 
@@ -199,7 +199,7 @@ export async function shareTripPdf(trip: Trip): Promise<'shared' | 'downloaded' 
       await navigator.share({
         files: [file],
         title: trip.title,
-        text: `${trip.title} — my TripForge itinerary`,
+        text: `${trip.title} — my Voya itinerary`,
       })
       return 'shared'
     } catch (err) {

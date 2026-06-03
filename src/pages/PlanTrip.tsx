@@ -11,13 +11,14 @@ import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { PickCityDialog } from '@/components/trip/PickCityDialog'
+import { CityAutocomplete } from '@/components/trip/CityAutocomplete'
+import { DateRangePicker } from '@/components/trip/DateRangePicker'
 import { TravellerBudgets, newTraveller } from '@/components/trip/TravellerBudgets'
 import { AdvancedBudget } from '@/components/trip/AdvancedBudget'
 import { FlightSearch } from '@/components/trip/FlightSearch'
 import { HotelSearch } from '@/components/trip/HotelSearch'
 import { supabase } from '@/lib/supabase'
 import { formatMoney } from '@/lib/format'
-import { countryFlag } from '@/lib/interests'
 import {
   emptyBreakdown,
   type Destination,
@@ -196,47 +197,26 @@ export function PlanTrip() {
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`city-${index}`}>City</Label>
-                    <div className="relative">
-                      <Input
-                        id={`city-${index}`}
-                        placeholder="Paris"
-                        value={dest.city}
-                        onChange={(e) => updateDestination(index, { city: e.target.value })}
-                      />
-                      {dest.countryCode && (
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-base">
-                          {countryFlag(dest.countryCode)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`country-${index}`}>Country</Label>
-                    <Input
-                      id={`country-${index}`}
-                      placeholder="France"
-                      value={dest.country}
-                      onChange={(e) => updateDestination(index, { country: e.target.value })}
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`city-${index}`}>City or region</Label>
+                  <CityAutocomplete
+                    id={`city-${index}`}
+                    value={{ city: dest.city, country: dest.country, countryCode: dest.countryCode ?? '' }}
+                    onChange={(v) => updateDestination(index, v)}
+                    placeholder="Search a city or region…"
+                  />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`from-${index}`} className="flex items-center gap-1">
-                      <CalendarDays className="h-3.5 w-3.5" /> Arrival
-                    </Label>
-                    <Input id={`from-${index}`} type="date" value={dest.from} onChange={(e) => updateDestination(index, { from: e.target.value })} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`to-${index}`} className="flex items-center gap-1">
-                      <CalendarDays className="h-3.5 w-3.5" /> Departure
-                    </Label>
-                    <Input id={`to-${index}`} type="date" min={dest.from || undefined} value={dest.to} onChange={(e) => updateDestination(index, { to: e.target.value })} />
-                  </div>
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-1">
+                    <CalendarDays className="h-3.5 w-3.5" /> Dates
+                  </Label>
+                  <DateRangePicker
+                    from={dest.from}
+                    to={dest.to}
+                    minDate={index > 0 ? destinations[index - 1].to || undefined : undefined}
+                    onChange={({ from, to }) => updateDestination(index, { from, to })}
+                  />
                 </div>
               </div>
             ))}

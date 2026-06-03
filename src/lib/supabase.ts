@@ -17,7 +17,7 @@ export const supabase: SupabaseClient = configured
 
 if (isDemoMode) {
   console.info(
-    '[TripForge] Running in DEMO mode (no Supabase keys found). ' +
+    '[Voya] Running in DEMO mode (no Supabase keys found). ' +
       'Trips are stored in your browser. Add VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY to .env.local for the live backend.',
   )
 }

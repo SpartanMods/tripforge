@@ -15,7 +15,7 @@ type Row = Record<string, any>
 const PREFIX = 'tf_demo_'
 const SEED_FLAG = `${PREFIX}seeded_v1`
 
-export const DEMO_USER = { id: 'demo-user-001', email: 'demo@tripforge.app' }
+export const DEMO_USER = { id: 'demo-user-001', email: 'demo@voya.app' }
 const DEMO_SESSION = {
   user: DEMO_USER,
   access_token: 'demo-token',

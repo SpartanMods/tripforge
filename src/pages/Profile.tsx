@@ -159,7 +159,7 @@ export function Profile() {
       </Card>
 
       <Separator />
-      <p className="text-center text-xs text-muted-foreground">TripForge · forge your next journey</p>
+      <p className="text-center text-xs text-muted-foreground">Voya · your next voyage</p>
     </div>
   )
 }

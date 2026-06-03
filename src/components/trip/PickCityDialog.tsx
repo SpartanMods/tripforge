@@ -171,16 +171,27 @@ export function PickCityDialog({ open, onClose, onPick, initialCountryCode }: Pi
                       </h3>
                     </div>
                     <p className="text-sm text-muted-foreground mt-0.5">{m.blurb}</p>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                      {m.matchedInterests.map((id) => (
-                        <span
-                          key={id}
-                          className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground"
-                        >
-                          {interestIcon(id)} {interestLabel(id)}
-                        </span>
+
+                    {/* Why this score — per-interest contribution */}
+                    <div className="mt-3 space-y-1.5">
+                      {m.breakdown.map((b) => (
+                        <div key={b.id} className="flex items-center gap-2">
+                          <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">
+                            {interestIcon(b.id)} {interestLabel(b.id)}
+                          </span>
+                          <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
+                            <span
+                              className={`absolute inset-y-0 left-0 rounded-full ${b.assumed ? 'bg-muted-foreground/40' : 'bg-primary'}`}
+                              style={{ width: `${b.score}%` }}
+                            />
+                          </span>
+                          <span className="w-7 shrink-0 text-right text-xs font-medium tabular-nums">{b.score}</span>
+                        </div>
                       ))}
-                      <span className="text-xs text-muted-foreground">{COST_LABEL[m.costTier]}</span>
+                      <p className="text-[11px] text-muted-foreground pt-0.5">
+                        Score = average across your three interests
+                        {m.breakdown.some((b) => b.assumed) ? ' · faint bars are estimates' : ''} · {COST_LABEL[m.costTier]}
+                      </p>
                     </div>
                   </div>
                   {/* Match ring */}

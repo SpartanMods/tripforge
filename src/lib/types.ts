@@ -1,4 +1,4 @@
-// Shared domain types for TripForge trip planning.
+// Shared domain types for Voya trip planning.
 
 export interface Destination {
   city: string
