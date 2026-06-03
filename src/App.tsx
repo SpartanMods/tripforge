@@ -9,6 +9,7 @@ import { MyTrips } from '@/pages/MyTrips'
 import { PlanTrip } from '@/pages/PlanTrip'
 import { TripDetail } from '@/pages/TripDetail'
 import { Profile } from '@/pages/Profile'
+import { Friends } from '@/pages/Friends'
 
 function AuthGuard({ session, children }: { session: Session | null; children: React.ReactNode }) {
   if (!session) return <Navigate to="/auth" replace />
@@ -56,6 +57,7 @@ export function App() {
           <Route path="/" element={<MyTrips />} />
           <Route path="/plan" element={<PlanTrip />} />
           <Route path="/trip/:id" element={<TripDetail />} />
+          <Route path="/friends" element={<Friends />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

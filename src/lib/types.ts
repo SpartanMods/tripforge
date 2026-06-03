@@ -81,3 +81,38 @@ export interface Trip {
   created_at: string
   metadata: TripMetadata | null
 }
+
+// ---- Social / collaboration ------------------------------------------------
+
+export interface Profile {
+  id: string
+  username: string
+  phone?: string | null
+  avatar_url?: string | null
+}
+
+export type FriendshipStatus = 'pending' | 'accepted'
+
+export interface Friendship {
+  id: string
+  requester_id: string
+  addressee_id: string
+  status: FriendshipStatus
+  created_at: string
+}
+
+// A friendship paired with the *other* person's profile and which side
+// initiated it — everything the UI needs to render a row.
+export interface FriendEdge {
+  friendship: Friendship
+  profile: Profile
+  direction: 'incoming' | 'outgoing' // who needs to act, for pending rows
+}
+
+export interface TripMember {
+  trip_id: string
+  user_id: string
+  role: 'owner' | 'collaborator'
+  joined_at: string
+  profile?: Profile
+}

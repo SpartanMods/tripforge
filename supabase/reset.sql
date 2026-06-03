@@ -31,6 +31,7 @@ drop table if exists public.suggestions     cascade;
 drop table if exists public.itinerary_days  cascade;
 drop table if exists public.trip_items      cascade;
 drop table if exists public.trip_members    cascade;
+drop table if exists public.friendships     cascade;
 drop table if exists public.trips           cascade;
 drop table if exists public.profiles        cascade;
 
@@ -143,6 +144,18 @@ $$;
 
 create policy "Trip members can view trips"
   on public.trips for select
+  using (public.is_trip_member(id));
+
+create policy "Members can view co-members"
+  on public.trip_members for select
+  using (public.is_trip_member(trip_id));
+
+create policy "Members can leave a trip"
+  on public.trip_members for delete
+  using (auth.uid() = user_id);
+
+create policy "Members can update trips"
+  on public.trips for update
   using (public.is_trip_member(id));
 
 
